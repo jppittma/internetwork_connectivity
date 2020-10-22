@@ -19,8 +19,8 @@ end
 
 %Threshold after which this function guesses a network is voxel based
 ATLAS_THRESHOLD = 5000;
-SHEN_FILENAME = 'yale_locs_metadata.mat';
-VOXEL_FILENAME = 'voxel_locs_metadata.mat';
+SHEN_FILENAME = 'shen_atlas_network_data.mat';
+VOXEL_FILENAME = 'voxel_network_data.mat';
 
 atlas = options.atlas;
 calculateAverage = options.calculateAverage;
