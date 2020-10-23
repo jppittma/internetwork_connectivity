@@ -7,13 +7,14 @@ arguments
 	reg_dict containers.Map
 end
 
-netpointer = zeros( size(pointer), 'like', pointer);
-for i=1:length(netpointer)
-	netpointer(i) = reg_dict( pointer(i) );
+network_pointer = zeros( size(pointer), 'like', pointer);
+for i=1:length(network_pointer)
+    if reg_dict.isKey(pointer(i))
+        network_pointer(i) = reg_dict( pointer(i) );
+    end
 end
 
-sorted_aij_struct = struct();
-[network_pointer, sorted_index] = sort(net_pointer);
+[network_pointer, sorted_index] = sort(network_pointer);
 
 %Sort according to associated network and assign to output 
 sorted_aij = aij(sorted_index,sorted_index);
