@@ -11,7 +11,7 @@ function [sorted_aij_struct,metadata]=sort_by_network(aij_flist,output_filename,
 %author JP Pittman
 
 arguments
-    aij_flist char
+    aij_flist
     output_filename char = [];
     options.calculateAverage logical = false;
     options.atlas char = []
@@ -30,10 +30,39 @@ VOXEL_FILENAME = [LOCATION 'voxel_network_data.mat'];
 atlas = options.atlas;
 calculateAverage = options.calculateAverage;
 
-flist = wfu_read_flist(aij_flist,1);
-num_subj = length(flist);
+switch class(aij_flist)
+    %Assume any string input is a file name.
+    case {'string', 'char'}
+        aij_flist = char(aij_flist);
+        [~,~,ext] = fileparts(aij_flist);
+        %Handle file based on extension
+        switch ext
+            case '.mat'
+                flist{1} = aij_flist;
+            case '.flist'
+                flist = wfu_read_flist(aij_flist,1);
+        end
+        
+        num_subj = length(flist);
+        [aij,pointer] = parse_aij_filename( flist{1} );    
+    %Support cell array input - e.g. an already read flist
+    case {'cell'}
+        flist = aij_flist;
+        num_subj = length(flist);
+        [aij,pointer] = parse_aij_filename( flist{1} );
+    %Support a loaded Aij.mat file
+    case {'struct'}
+        aij = aij_flist.aij;
+        pointer = aij_flist.pointer;
+    otherwise
+        error(['Unrecognized Input Type. Supported types include:'...
+        'flists, cell arrays, .mat adjacency files, or structs containing'...
+        'aij and pointer data']);
+        
+end
 
-[aij,pointer] = parse_aij_filename( flist{1} );
+
+
 
 switch atlas
 	case []

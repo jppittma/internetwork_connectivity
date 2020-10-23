@@ -3,7 +3,7 @@ function avg_network_struct = avg_sorted_network(aij_struct)
 	sorted_aij = aij_struct.sorted_aij;
 	network_pointer = aij_struct.network_pointer;
 
-	network = @(num1,num2) sorted_aij(network_pointer == num1,network_dict == num2);
+	network = @(num1,num2) sorted_aij(network_pointer == num1,network_pointer == num2);
 	networks_of_interest = unique( network_pointer );
 	num_nets = length(networks_of_interest);
 	avg_network = zeros(num_nets);
