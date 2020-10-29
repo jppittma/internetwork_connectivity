@@ -1,4 +1,4 @@
-function [sorted_aij_struct,metadata]=sort_by_network(aij_flist,output_filename, options)
+function [sorted_aij_struct,metadata,groupAvg]=sort_by_network_RL(aij_flist,output_filename, options)
 %sorted_avg=SORT_BY_NETWORK(flist) Takes a flist and applies sorting of regional or voxel-based adjacency
 %matricies placing adjacency of common networks together, then averaging them. 
 %It returns an array of average adjacency matricies.It optionally writes them to a file given by the second
@@ -13,7 +13,7 @@ function [sorted_aij_struct,metadata]=sort_by_network(aij_flist,output_filename,
 arguments
     aij_flist
     output_filename char = [];
-    options.calculateAverage logical = false;
+    %RL% options.calculateAverage logical = false;
     options.atlas char = []
 end
 
@@ -28,7 +28,7 @@ SHEN_FILENAME = [LOCATION 'shen_atlas_network_data.mat'];
 VOXEL_FILENAME = [LOCATION 'voxel_network_data.mat'];
 
 atlas = options.atlas;
-calculateAverage = options.calculateAverage;
+%RL% calculateAverage = options.calculateAverage;
 
 switch class(aij_flist)
     %Assume any string input is a file name.
@@ -80,22 +80,30 @@ load_struct = load(metadata, 'reg_dict');
 reg_dict = load_struct.reg_dict;
 
 
-sort_fcn = @(input_aij,input_pointer) sort_network(input_aij, input_pointer,reg_dict);
-if (calculateAverage)
-	sort_fcn = @(input_aij, input_pointer) avg_sorted_network(...
-											sort_network(input_aij,input_pointer,reg_dict) );
+%RL% sort_fcn = @(input_aij,input_pointer) sort_network(input_aij, input_pointer,reg_dict);
+%RL% if (calculateAverage)
+%RL%	sort_fcn = @(input_aij, input_pointer) avg_sorted_network(...
+%RL%											sort_network(input_aij,input_pointer,reg_dict) );
+%RL% end
+
+
+groupAvg = zeros(length(pointer));
+
+for x = 1:num_subj
+	[aij,pointer] = parse_aij_filename( flist{x} );
+    sortedAij_full = sort_network(aij,pointer,reg_dict);%RL%
+    groupAvg = groupAvg + sortedAij_full.sorted_aij;%RL%
+    if x == 1
+        %preallocate
+        sorted_aij_struct(1:num_subj) = avg_sorted_network(sortedAij_full);
+    else
+        sorted_aij_struct(x) = avg_sorted_network(sortedAij_full);
+    end
 end
 
-%preallocate
-sorted_aij_struct(1:num_subj) = sort_fcn(aij, pointer);
-
-for i = 2:num_subj
-	[aij,pointer] = parse_aij_filename( flist{i} );
-    sorted_aij_struct(i) = sort_fcn(aij, pointer);
-end
-
+groupAvg = groupAvg ./ num_subj;%RL%
 if(~isempty(output_filename))
-    save(output_filename,'sorted_aij_struct','metadata');
+    save(output_filename,'sorted_aij_struct','metadata', 'groupAvg');%RL%
 end
 
 
